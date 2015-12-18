@@ -19,57 +19,105 @@
 # Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 # Boston, MA  02110-1301, USA.
 
-all__ = (
-    "ProjectContextTest",
-)
+__all__ = ["ProjectContextTest"]
 
-import unittest
-import sys
-import os
 import mock
+import os
+import sys
+import unittest
+
 sys.path.insert(0, os.path.abspath(__file__ + "/../.."))
 from zanataclient.context import ProjectContext
 
+
 # test data
-command_options = {'comment_cols': [{'name': '--commentcols', 'value': 'en-US,es,pos,description',
-                                     'internal': 'comment_cols', 'long': ['--commentcols'],
-                                     'type': 'command', 'metavar': 'COMMENTCOLS'}],
-                   'user_config': [{'name': '--user-config',
-                                    'value': './testfiles/zanata.ini', 'internal': 'user_config',
-                                    'long': ['--user-config'], 'type': 'command', 'metavar': 'USER-CONFIG'}],
-                   'project_config': [{'name': '--project-config', 'value': './testfiles/zanata.xml',
-                                       'internal': 'project_config', 'long': ['--project-config'],
-                                       'type': 'command', 'metavar': 'PROJECT-CONFIG'}],
-                   'project_type': [{'name': '--project-type', 'value': 'podir', 'internal': 'project_type',
-                                     'long': ['--project-type'], 'type': 'command', 'metavar': 'PROJECTTYPE'}]}
+COMMAND_OPTIONS = {
+    'comment_cols': [
+        {
+            'name': '--commentcols',
+            'value': 'en-US,es,pos,description',
+            'internal': 'comment_cols',
+            'long': ['--commentcols'],
+            'type': 'command',
+            'metavar': 'COMMENTCOLS'}
+    ],
+    'user_config': [
+        {
+            'name': '--user-config',
+            'value': './testfiles/zanata.ini',
+            'internal': 'user_config',
+            'long': ['--user-config'],
+            'type': 'command',
+            'metavar': 'USER-CONFIG'}
+    ],
+    'project_config': [
+        {
+            'name': '--project-config',
+            'value': './testfiles/zanata.xml',
+            'internal': 'project_config',
+            'long': ['--project-config'],
+            'type': 'command',
+            'metavar': 'PROJECT-CONFIG'}
+    ],
+    'project_type': [
+        {
+            'name': '--project-type',
+            'value': 'podir',
+            'internal': 'project_type',
+            'long': ['--project-type'],
+            'type': 'command',
+            'metavar': 'PROJECTTYPE'}
+    ]
+}
 
-version_service_return_content = {'versionNo': '3.7.3', 'buildTimeStamp': 'unknown', 'scmDescribe': 'unknown'}
+version_service_return_content = {
+    'versionNo': '3.7.3',
+    'buildTimeStamp': 'unknown',
+    'scmDescribe': 'unknown'
+}
 
-iteration_locales_return_content = [{'displayName': 'English (United States)', 'localeId': 'en-US'},
-                                    {'alias': 'pa-IN', 'displayName': 'Punjabi', 'localeId': 'pa'},
-                                    {'alias': 'hi-IN', 'displayName': 'Hindi', 'localeId': 'hi'},
-                                    {'displayName': 'Tamil (India)', 'localeId': 'ta-IN'},
-                                    {'displayName': 'Bengali (India)', 'localeId': 'bn-IN'}]
+iteration_locales_return_content = [
+    {'displayName': 'English (United States)', 'localeId': 'en-US'},
+    {'alias': 'pa-IN', 'displayName': 'Punjabi', 'localeId': 'pa'},
+    {'alias': 'hi-IN', 'displayName': 'Hindi', 'localeId': 'hi'},
+    {'displayName': 'Tamil (India)', 'localeId': 'ta-IN'},
+    {'displayName': 'Bengali (India)', 'localeId': 'bn-IN'}
+]
 
-project_locales_return_content = [{"displayName": "English (United States)", "localeId": "en-US"},
-                                  {"displayName": "Hindi", "localeId": "hi"}, {"displayName": "Croatian", "localeId": "hr"},
-                                  {"displayName": "Japanese", "localeId": "ja"}, {"displayName": "Kannada", "localeId": "kn"},
-                                  {"displayName": "Chinese (Traditional, Taiwan)", "localeId": "zh-Hant-TW"}]
+project_locales_return_content = [
+    {"displayName": "English (United States)", "localeId": "en-US"},
+    {"displayName": "Hindi", "localeId": "hi"},
+    {"displayName": "Croatian", "localeId": "hr"},
+    {"displayName": "Japanese", "localeId": "ja"},
+    {"displayName": "Kannada", "localeId": "kn"},
+    {"displayName": "Chinese (Traditional, Taiwan)", "localeId": "zh-Hant-TW"}
+]
 
-project_config_without_locale_map = {'transdir': '/home/user/project/target', 'project_type': 'gettext',
-                                     'http_headers': {'Accept': 'application/json', 'X-Auth-User': 'username', 'X-Auth-Token': 'key'},
-                                     'url': 'http://localhost:8080/zanata', 'key': 'key', 'srcdir': '/home/user/project/source',
-                                     'project_version': '1.0', 'client_version': '1.3.12-74-g0b1d-mod', 'project_id': 'test-project',
-                                     'user_name': 'username'}
+project_config_without_locale_map = {
+    'transdir': '/home/user/project/target',
+    'project_type': 'gettext',
+    'http_headers': {
+        'Accept': 'application/json',
+        'X-Auth-User': 'username',
+        'X-Auth-Token': 'key'
+    },
+    'url': 'http://localhost:8080/zanata',
+    'key': 'key',
+    'srcdir': '/home/user/project/source',
+    'project_version': '1.0',
+    'client_version': '1.3.12-74-g0b1d-mod',
+    'project_id': 'test-project',
+    'user_name': 'username'
+}
 
 
 class ProjectContextTest(unittest.TestCase):
     def setUp(self):
-        self.context = ProjectContext(command_options)
+        self.context = ProjectContext(COMMAND_OPTIONS)
 
     def test_command_options(self):
         command_options_keys = ['project_type', 'comment_cols', 'user_config', 'project_config']
-        self.assertEqual(self.context.command_options.keys(), command_options_keys)
+        self.assertEqual(self.context.COMMAND_OPTIONS.keys(), command_options_keys)
         self.assertEqual(
             self.context.command_dict,
             {'project_config': './testfiles/zanata.xml', 'comment_cols': 'en-US,es,pos,description',
